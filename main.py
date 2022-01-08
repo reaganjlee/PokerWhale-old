@@ -1,5 +1,11 @@
 import random
 
+class Game():
+  pass
+
+class Player():
+  pass
+
 class Card(object):
     def __init__(self, value, name, suit):
         self.value = value
