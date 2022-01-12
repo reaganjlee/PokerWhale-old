@@ -29,22 +29,24 @@ class Game(object):
     return 'We have a game!' + '\nBlinds are '+ str(self.small_blind_amt) +'/' + str(self.big_blind_amt) + '\nWith a ' + str(self.cards) + '\nand ' + str(len(self.players)) + ' players'
     #+ str(self.players)
 
-  def game_start(self):
+  def start(self):
     print('game restarting')
 
-    #self.players_not_out = self.positioned
+    self.players_not_out = self.positioned.copy()
 
-    #clear cards from all players
+    #clear cards/roles from all players
     for player in self.players:
       player.clear_cards()
-      print('players cards removed')
+      player.special_role = None
+    print('players cards/roles removed')
+    
 
     self.cards.__init__()
     print('cards reset')
 
     self.cards.shuffle()
     self.deal_cards_all_players()
-    self.blinds_money_in()
+    self.blinds_in_roles_set()
     print('The blinds have been put in, UTG starts')
     self.next_turn()
 
@@ -133,27 +135,33 @@ class Game(object):
   def deal_cards_all_players(self):
     for player in self.positioned:
       self.cards.deal(player)  
+
   
-  def blinds_money_in(self): 
+  def blinds_in_roles_set(self): 
+    self.players_not_out[-1:][0].special_role = 'Btn'
+
     self.put_money_in_pot(self.small_blind_amt)
-    self.turn +=1
+    self.players_not_out[self.turn].special_role = 'SB'
     print('\ncurrent game stake is: ' + str(self.table_stake))
     print('small blinds stake is: ' + str(self.players_not_out[self.turn].current_stake))
+
+    print('\n going on to player 2')
+    self.turn +=1
+    
     #self.positioned[0].current_stack -= self.small_blind_amt 
     #self.pot += self.small_blind_amt  
     
     self.put_money_in_pot(self.big_blind_amt)
+    self.players_not_out[self.turn].special_role = 'BB'
     print('\ncurrent game stake is: ' + str(self.table_stake))
     print('big blinds stake is: ' + str(self.players_not_out[self.turn].current_stake))
-    #self.positioned[1].current_stack -= self.big_blind_amt
-    #self.pot += self.big_blind_amt  
 
   def put_money_in_pot(self, amount):
     self.pot += amount
     self.table_stake = amount 
     self.players_not_out[self.turn].current_stack -= amount
     self.players_not_out[self.turn].current_stake += amount
-    print('current players stake is: ' + str(self.players_not_out[self.turn].current_stake ))
+
 
 
 
