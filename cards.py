@@ -22,11 +22,11 @@ class Deck(object):
       random.shuffle(self.cards)
       print('shuffled')
     
-  def deal(self, location, numofcards=2):
+  def deal(self, location, numofcards=1):
     #given_hand = []
     for num in range(numofcards):
-      location.cards.append(self.cards.pop(0))
-    for i in location.cards:
+      location.append(self.cards.pop(0))
+    for i in location:
       i.showing = True 
     return location
 
