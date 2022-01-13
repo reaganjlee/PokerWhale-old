@@ -13,7 +13,7 @@ class Game(object):
     self.big_blind_amt = big_blind_amt
 
     self.current_bet = 0 
-    self.street = 'pre-flop'
+    self.street = 'Pre-flop'
     self.turn = 0
 
     self.positioned = players.copy() #list of players in order of position
@@ -60,51 +60,115 @@ class Game(object):
     pass #Pre-flop 
 
   def next_turn(self, folded=False):
+    if len(self.players_not_out) == 1:
+      self.game_end()
+
     if folded == False:
       self.turn += 1
-    if self.turn == len(self.players_not_out):
+    if (self.street == 'Pre-flop') and (self.turn == len(self.players_not_out)):
       self.turn = 0
-    print('\ncurrent players turn: ' + self.players_not_out[self.turn].name)
+    if (self.street != 'Pre-flop') and (self.turn == len(self.players_not_out)):
+      self.next_street()
+    if (self.street != 'Done'):
+      print('\nThe current turn number is: ' + str(self.turn) + '\n')
+      
 
-    print('stack size: ' + str(round(self.players_not_out[self.turn].current_stack, 2)))
-    print('cards: ' + str(self.players_not_out[self.turn].cards))
-    print("player's current stake: " + str(round(self.players_not_out[self.turn].current_stake, 2)))
-    print("game's stake: " + str(self.table_stake))
-    print('special_role: ' + str(self.players_not_out[self.turn].special_role))
-    
-    while True:
-      try:
-        players_input = input('what would you like to do? ')
-        if (self.players_not_out[self.turn].current_stake == self.table_stake) and (players_input == 'check'):
-          break
-        #need to add in the other option when BB can check preflop 
-        if players_input == 'fold' or players_input == 'call' or players_input == 'raise':
-          break
+
+      print('\ncurrent players turn: ' + self.players_not_out[self.turn].name)
+
+      print('stack size: ' + str(round(self.players_not_out[self.turn].current_stack, 2)))
+      print('cards: ' + str(self.players_not_out[self.turn].cards))
+      print("player's current stake: " + str(round(self.players_not_out[self.turn].current_stake, 2)))
+      print("game's stake: " + str(self.table_stake))
+      print("game's current pot size: " + str(round(self.pot, 2)))
+      print('special_role: ' + str(self.players_not_out[self.turn].special_role))
+      
+      while True:
+        try:
+          players_input = input('what would you like to do? ')
+          if (self.players_not_out[self.turn].current_stake == self.table_stake) and (players_input == 'check'):
+            break
+          elif (players_input == 'check'):
+            print('\nYour options are fold, call, raise')
+
+          elif (self.players_not_out[self.turn].current_stake == self.table_stake) and (players_input == 'call'): #When its BB
+            print('\nYour options are fold, check, raise')
+
+          elif players_input == 'fold' or players_input == 'call' or players_input == 'raise':
+            break
+          else:
+            print('\nYour options are fold, check, call, raise')
+        except:
+          continue
+
+      if players_input == 'fold':
+        self.fold()
+      if players_input == 'check':
+        self.check()
+      if players_input == 'call':
+        self.call()
+      if players_input == 'raise':
+        raise_amt = input('What would you like to raise it to? ')
+        self.raise_by(raise_amt)
+      
+      print('we have some input!')
+      
+
+      if (self.street == 'Pre-flop') and (self.turn == 1): #can't put this up front because BB has to go during pre-flop
+        self.next_street()
+
+      else:
+        if players_input == 'fold':
+          self.next_turn(True)
         else:
-          print('\nYour options are fold, check, call, raise')
-      except:
-        continue
-
-    if players_input == 'fold':
-      self.fold()
-    if players_input == 'check':
-      self.check()
-    if players_input == 'call':
-      self.call()
-    if players_input == 'raise':
-      raise_amt = input('What would you like to raise it to? ')
-      self.raise_by(raise_amt)
-    
-    print('we have some input!')
+          self.next_turn()
     
   def next_street(self):
-    pass
+    print('\n\n we got it!\n\n')
+    
+    if self.street == 'River':
+      self.game_end()
+    else:
+      if self.street == 'Turn':
+        self.street = 'River'
+        self.cards.deal(self.card_board)
+      if self.street == 'Flop':
+        self.street = 'Turn'
+        self.cards.deal(self.card_board) 
+      if self.street == 'Pre-flop':
+        self.street = 'Flop'
+        self.cards.deal(self.card_board, 3)  
+      
 
-  def game_end(self):
-    for player in self.positioned:
-      if player.current_stack == 0:
-        if player.special_role == 'BB':
-          pass
+      print('The current street is: ' + str(self.street))
+      print(self.card_board)
+
+      self.turn = -1
+      self.table_stake = 0
+      self.stake_gap = 0 
+      self.current_bet = 0 
+
+      for player in self.positioned:
+        player.current_stake = 0
+
+    
+
+    self.next_turn()
+
+
+  def game_end(self): #calculates the winner and gives the pot to the correct player, also uses a smaller function to calculate side-pots 
+  
+  #so ways to get to this function, you get to the river, or everyone folds i.e. only one player left in players_not_out 
+    print('\n\n Game ends!\n\n')
+    if len(self.players_not_out) == 1:
+      print('When folding down, the winner is: ' + str(self.players_not_out[0]))
+    self.street = 'Done'
+
+    
+    #for player in self.positioned:
+     # if player.current_stack == 0:
+      #  if player.special_role == 'BB':
+       #   pass
 
   def change_pos_order(self, busted_special_role=None):
 
@@ -134,13 +198,14 @@ class Game(object):
 
   def deal_cards_all_players(self):
     for player in self.positioned:
-      self.cards.deal(player)  
+      self.cards.deal(player.cards, 2)  
 
   
   def blinds_in_roles_set(self): 
     self.players_not_out[-1:][0].special_role = 'Btn'
 
     self.put_money_in_pot(self.small_blind_amt)
+    self.table_stake = self.small_blind_amt
     self.players_not_out[self.turn].special_role = 'SB'
     print('\ncurrent game stake is: ' + str(self.table_stake))
     print('small blinds stake is: ' + str(self.players_not_out[self.turn].current_stake))
@@ -152,13 +217,13 @@ class Game(object):
     #self.pot += self.small_blind_amt  
     
     self.put_money_in_pot(self.big_blind_amt)
+    self.table_stake = self.big_blind_amt
     self.players_not_out[self.turn].special_role = 'BB'
     print('\ncurrent game stake is: ' + str(self.table_stake))
     print('big blinds stake is: ' + str(self.players_not_out[self.turn].current_stake))
 
   def put_money_in_pot(self, amount):
     self.pot += amount
-    self.table_stake = amount 
     self.players_not_out[self.turn].current_stack -= amount
     self.players_not_out[self.turn].current_stake += amount
 
@@ -173,15 +238,12 @@ class Game(object):
     print(self.players_not_out)
     '''print('\npositioned should have all the players still ')
     print(self.positioned)'''
-    self.next_turn()
 
   def check(self):
     print(str(self.players_not_out[self.turn]) + ' checks')
-    self.next_turn()
   
   def call(self):
     self.put_money_in_pot(self.table_stake - self.players_not_out[self.turn].current_stake)
-    self.next_turn()
     
 
   def raise_by(self, amount):
@@ -190,22 +252,8 @@ class Game(object):
     
     print(str(self.players_not_out[self.turn]) + ' raises to' + str(amount))
     self.put_money_in_pot(amount)
-    self.next_turn()
+    self.table_stake = amount 
     
 
-
-
-
-
-  # Seeing who won 
-
-  def highestcombo(self):
-    pass 
-  
-  def if_flush(self):
-    pass
-
-  def if_straight(self):
-    pass
   
 game = Game(deck, [player1, player2, player3, player4])

@@ -5,6 +5,7 @@ class Player(object):
     self.current_stack = starting_stack
     self.current_stake = 0 
     self.special_role = None #This is needed in the case of when BB leaves the table
+    self.all_in = False
   
   def __repr__(self):
     return str(self.name)#"starting stack: " + str(self.starting_stack) + "\ncards: " + str(self.cards)
