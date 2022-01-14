@@ -28,4 +28,4 @@ class win_calculator(object):
   def if_straight(self):
     pass
 
-#calc = win_calculator(board, [player1, player2, player3, player4])
+calc = win_calculator(game.board, game.players)

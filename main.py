@@ -1,5 +1,7 @@
-from cards import deck
+from cards import *
 from players import player1, player2, player3, player4
+#from winner_calculator import calc
+from collections import Counter
 
 class Game(object):
   def __init__(self, cards, players, small_blind_amt=.10, big_blind_amt=.20):
@@ -255,5 +257,180 @@ class Game(object):
     self.table_stake = amount 
     
 
+
+
+
+
+  #calculating the winner 
+
+  def checker(self, player):
+    player_nums = self.player_nums(player)
+
+    if_pair = self.if_pair(player_nums)
+    print(str(if_pair))
+
+    print('\nseparator flush below\n')
+    if_flush = self.if_flush(player1)
+    print(str(if_flush))
+
+    print('\nseparator set below\n')
+    if_set = self.if_set(player_nums)
+    print(str(if_set))
+
+    print('\nseparator quads below\n')
+    if_quads = self.if_quads(player_nums)
+    print(str(if_quads))
+
+  
+  def player_nums(self, player):
+    lst = self.card_board.copy()
+    for card in player.cards:
+      lst.append(card)
+    print(str(lst))
+    print(lst[0].suit)
+
+    lst_of_nums = []
+    for item in lst:
+      lst_of_nums.append(item.number)
+    print(lst_of_nums)
+
+    #cnt = Counter(lst_of_nums)
+    #count_list = [k for k, v in cnt.iteritems() if v > 1]
+    #[num for num in lst_of_nums if lst_of_nums.count(num)>1]
+    
+    __ = []
+    for num in lst_of_nums:
+      if lst_of_nums.count(num) > 1:
+        __.append([num, lst_of_nums.count(num)])
+    
+    count_lst = []
+    for num in __:
+      if num not in count_lst:
+        count_lst.append(num)
+
+    '''count_lst = []
+    for num in lst_of_nums:
+      if lst_of_nums.count(num) > 1:
+        count_lst.append([num, lst_of_nums.count(num)])'''
+        
+    print(str(count_lst))
+    return count_lst 
+
+    
+
+  def if_pair(self, player_nums):
+    #player_nums = self.player_nums(player)
+    lst_of_pairs = [item for item in player_nums if item[1] == 2]
+    print('\nlst_of_pairs I think works!\n')
+    if lst_of_pairs:
+      #print('before sorting')
+      #print(str(result))
+      #print('\nafter sorting:')
+      lst_of_pairs.sort(key = lambda item: item[0], reverse = True)
+
+      print(str([True, lst_of_pairs]))
+      return [True, lst_of_pairs]
+
+    
+  
+  def if_set(self, player_nums):
+    lst_of_sets = [item for item in player_nums if item[1] == 3]
+    print('\n think this works for the if_set function!\n')
+    if lst_of_sets:
+      lst_of_sets.sort(key = lambda item: item[0], reverse = True) #Pretty sure that there are no two sets possible so this line isn't needed but idk fs and I don't want this to break xd 
+
+      print(str([True, lst_of_sets]))
+      return [True, lst_of_sets]
+    
+  def if_quads(self, player_nums):
+    lst_of_quads = [item for item in player_nums if item[1] == 4]
+    print('\n think this works for the if_quads function!\n')
+    if lst_of_quads:
+      lst_of_quads.sort(key = lambda item: item[0], reverse = True) #Pretty sure that there are no two sets possible so this line isn't needed but idk fs and I don't want this to break xd 
+
+      print(str([True, lst_of_quads]))
+      return [True, lst_of_quads]
+  def highestcombo(self):
+    pass 
+  
+  def if_flush(self, player):
+    lst = self.card_board.copy()
+    for card in player.cards:
+      lst.append(card)
+    print(str(lst))
+    print(lst[0].suit)
+
+    lst_of_suits = []
+    for itm in lst:
+      lst_of_suits.append(itm.suit)
+    print(lst_of_suits)
+
+    suit_list = ['Hearts', 'Spades', 'Clubs', 'Diamonds']
+    for suit in suit_list:
+      if lst_of_suits.count(suit) >= 5:
+        print(str(suit))
+        print('We have a flush!')
+        return True 
+    print('no flush!')
+    return False
+
+    #print('Hearts count: ' + str(lst_of_suits.count('Hearts')))
+    #print('Diamonds count: ' + str(lst_of_suits.count('Diamonds')))
+    #print('Clubs count: ' + str(lst_of_suits.count('Clubs')))
+    #print('Spades count: ' + str(lst_of_suits.count('Spades')))
+
+    #if lst.count(lst.suit):
+    
+
+    '''suit_lst = []
+    __ = []
+    for item in lst_of_suits:
+      if lst_of_suits.count(num) > 1:
+        __.append([num, lst_of_suits.count(num)])
+    
+    count_lst = []
+    for num in __:
+      if num not in count_lst:
+        count_lst.append(num)'''
+
+
+  def if_straight(self):
+    pass
   
 game = Game(deck, [player1, player2, player3, player4])
+#game.cards.shuffle()
+#game.cards.deal(game.card_board, 5)
+
+test_card = Card(3, '3', 'Hearts')
+test_card.showing = True
+game.card_board.append(test_card)
+
+test_card = Card(3, '3', 'Hearts')
+test_card.showing = True
+game.card_board.append(test_card)
+
+test_card = Card(3, '3', 'Hearts')
+test_card.showing = True
+game.card_board.append(test_card)
+
+test_card = Card(5, '5', 'Hearts')
+test_card.showing = True
+game.card_board.append(test_card)
+
+test_card = Card(7, '7', 'Hearts')
+test_card.showing = True
+game.card_board.append(test_card)
+ 
+print(str(game.card_board))
+
+print('\nThe players cards are: ')
+game.deal_cards_all_players()
+for player in game.positioned:
+  print(str(player.cards))
+
+
+print('\n')
+game.player_nums(player1)
+
+print('\n\nIf there is a pair there should be text')
+game.checker(player1)

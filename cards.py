@@ -6,6 +6,8 @@ class Card(object):
         self.suit = suit
         self.name = name 
         self.showing = False
+        
+        #self.player_nums = []
     def __repr__(self):
         suit_symbols = {
           "Hearts": '♥',
@@ -29,6 +31,10 @@ class Deck(object):
     for i in location:
       i.showing = True 
     return location
+  
+  #def deal_specific(self, location, specific_card):
+  #  location.append(Card(values[name], name, suit))
+  # you can just a new object, have a string that says like Ace of Hearts and use that to make a new object then delete the old object from the deck, though its too much work for rn 
 
 class StandardDeck(Deck):
     def __init__(self):
